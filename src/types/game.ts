@@ -61,6 +61,7 @@ export interface GameSession {
   teams: Map<string, Team>;
   timerStartedAt?: number;
   timerEndsAt?: number;
+  useBigScreen: boolean;
 }
 
 export interface SerializedGameSession extends Omit<GameSession, 'teams'> {

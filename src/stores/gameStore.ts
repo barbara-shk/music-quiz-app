@@ -4,13 +4,14 @@ import { GamePhase, Round, Team } from '@/types/game';
 interface GameState {
   sessionId: string | null;
   sessionCode: string | null;
-  role: 'master' | 'team' | null;
+  role: 'master' | 'team' | 'big-screen' | null;
 
   phase: GamePhase;
   currentRound: Round | null;
   currentRoundIndex: number;
   rounds: Round[];
   teams: Team[];
+  useBigScreen: boolean;
 
   myTeamId: string | null;
   myAnswer: string | null;
@@ -18,8 +19,13 @@ interface GameState {
   timeRemaining: number;
   timerActive: boolean;
 
+  answerRevealed: boolean;
+  revealedAnswer: string | null;
+  revealedRoundId: string | null;
+
   setSession: (id: string, code: string) => void;
-  setRole: (role: 'master' | 'team') => void;
+  setRole: (role: 'master' | 'team' | 'big-screen') => void;
+  setUseBigScreen: (useBigScreen: boolean) => void;
   updatePhase: (phase: GamePhase) => void;
   setCurrentRound: (round: Round | null, index: number) => void;
   setRounds: (rounds: Round[]) => void;
@@ -35,6 +41,8 @@ interface GameState {
   updateTimer: (timeRemaining: number) => void;
   setTimerActive: (active: boolean) => void;
   updateScores: (scores: Record<string, number>) => void;
+  setAnswerRevealed: (revealed: boolean, answer?: string, roundId?: string) => void;
+  resetReveal: () => void;
   resetGame: () => void;
 }
 
@@ -48,6 +56,7 @@ export const useGameStore = create<GameState>((set) => ({
   currentRoundIndex: -1,
   rounds: [],
   teams: [],
+  useBigScreen: false,
 
   myTeamId: null,
   myAnswer: null,
@@ -55,9 +64,15 @@ export const useGameStore = create<GameState>((set) => ({
   timeRemaining: 0,
   timerActive: false,
 
+  answerRevealed: false,
+  revealedAnswer: null,
+  revealedRoundId: null,
+
   setSession: (id, code) => set({ sessionId: id, sessionCode: code }),
 
   setRole: (role) => set({ role }),
+
+  setUseBigScreen: (useBigScreen) => set({ useBigScreen }),
 
   updatePhase: (phase) => set({ phase }),
 
@@ -113,6 +128,12 @@ export const useGameStore = create<GameState>((set) => ({
       })),
     })),
 
+  setAnswerRevealed: (revealed, answer, roundId) =>
+    set({ answerRevealed: revealed, revealedAnswer: answer ?? null, revealedRoundId: roundId ?? null }),
+
+  resetReveal: () =>
+    set({ answerRevealed: false, revealedAnswer: null, revealedRoundId: null }),
+
   resetGame: () =>
     set({
       sessionId: null,
@@ -123,9 +144,13 @@ export const useGameStore = create<GameState>((set) => ({
       currentRoundIndex: -1,
       rounds: [],
       teams: [],
+      useBigScreen: false,
       myTeamId: null,
       myAnswer: null,
       timeRemaining: 0,
       timerActive: false,
+      answerRevealed: false,
+      revealedAnswer: null,
+      revealedRoundId: null,
     }),
 }));

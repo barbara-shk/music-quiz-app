@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { QuestionDisplay } from '@/components/team/QuestionDisplay';
 import { AnswerInput } from '@/components/team/AnswerInput';
+import { TeamAnswerReveal } from '@/components/team/TeamAnswerReveal';
 import { CountdownTimer } from '@/components/shared/CountdownTimer';
 import { Scoreboard } from '@/components/shared/Scoreboard';
 import { Users, Trophy } from 'lucide-react';
@@ -121,22 +122,26 @@ export default function TeamPlayPage() {
             <CountdownTimer totalTime={currentRound.timeLimit} />
             <QuestionDisplay round={currentRound} />
             <AnswerInput />
+            <TeamAnswerReveal />
           </div>
         )}
 
         {/* Round Ended */}
         {phase === 'round-ended' && (
-          <Card>
-            <CardContent className="py-12">
-              <div className="text-center">
-                <Trophy className="h-16 w-16 mx-auto text-yellow-500 mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Round Complete!</h2>
-                <p className="text-muted-foreground">
-                  The game master is reviewing answers...
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <TeamAnswerReveal />
+            <Card>
+              <CardContent className="py-12">
+                <div className="text-center">
+                  <Trophy className="h-16 w-16 mx-auto text-yellow-500 mb-4" />
+                  <h2 className="text-2xl font-bold mb-2">Round Complete!</h2>
+                  <p className="text-muted-foreground">
+                    The game master is reviewing answers...
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Game Ended */}

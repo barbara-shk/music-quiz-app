@@ -28,6 +28,9 @@ export function useSocket() {
     setRounds,
     setTeams,
     setMyTeamId,
+    setAnswerRevealed,
+    resetReveal,
+    setUseBigScreen,
   } = useGameStore();
 
   useEffect(() => {
@@ -118,6 +121,9 @@ export function useSocket() {
       if (session.myTeamId) {
         setMyTeamId(session.myTeamId);
       }
+      if (session.useBigScreen !== undefined) {
+        setUseBigScreen(session.useBigScreen);
+      }
     });
 
     socket.on('team:joined', (team) => {
@@ -136,6 +142,7 @@ export function useSocket() {
       setCurrentRound(round, round.roundNumber - 1);
       updatePhase('round-active');
       setTimerActive(true);
+      resetReveal(); // Reset answer reveal when new round starts
 
       const timeRemaining = Math.max(0, Math.floor((timerEndsAt - Date.now()) / 1000));
       updateTimer(timeRemaining);
@@ -166,6 +173,10 @@ export function useSocket() {
       updatePhase('game-ended');
       updateScores(finalScores);
       setTimerActive(false);
+    });
+
+    socket.on('answer:revealed', (roundId, correctAnswer) => {
+      setAnswerRevealed(true, correctAnswer, roundId);
     });
 
     socket.on('error', (message) => {

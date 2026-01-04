@@ -7,7 +7,7 @@ class SessionManager {
   private codes: Map<string, string> = new Map();
   private cleanupIntervals: Map<string, NodeJS.Timeout> = new Map();
 
-  createSession(masterId: string): GameSession {
+  createSession(masterId: string, useBigScreen: boolean = false): GameSession {
     const code = this.generateUniqueCode();
     const session: GameSession = {
       id: uuidv4(),
@@ -18,6 +18,7 @@ class SessionManager {
       currentRoundIndex: -1,
       rounds: [],
       teams: new Map(),
+      useBigScreen,
     };
 
     this.sessions.set(session.id, session);

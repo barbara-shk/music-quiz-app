@@ -1,17 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSocket } from '@/hooks/useSocket';
 import { useGameStore } from '@/stores/gameStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Loader2, Tv, Users } from 'lucide-react';
 
 export default function MasterPage() {
   const router = useRouter();
   const { connected, emit } = useSocket();
   const { sessionId, sessionCode, setRole, resetGame } = useGameStore();
+  const [displayMode, setDisplayMode] = useState<'teams' | 'bigscreen'>('teams');
 
   useEffect(() => {
     setRole('master');
@@ -26,7 +29,8 @@ export default function MasterPage() {
   }, [sessionId, sessionCode, router]);
 
   const handleCreateSession = () => {
-    emit('session:create', 'Game Master');
+    const useBigScreen = displayMode === 'bigscreen';
+    emit('session:create', 'Game Master', useBigScreen);
   };
 
   return (
@@ -38,7 +42,37 @@ export default function MasterPage() {
             Create a new game session for your music quiz
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">Display Mode</Label>
+            <RadioGroup value={displayMode} onValueChange={(value) => setDisplayMode(value as 'teams' | 'bigscreen')}>
+              <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-accent cursor-pointer">
+                <RadioGroupItem value="teams" id="teams" />
+                <div className="flex-1">
+                  <Label htmlFor="teams" className="cursor-pointer font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Teams Have Media
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Traditional mode - teams see media on their own screens
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-accent cursor-pointer">
+                <RadioGroupItem value="bigscreen" id="bigscreen" />
+                <div className="flex-1">
+                  <Label htmlFor="bigscreen" className="cursor-pointer font-medium flex items-center gap-2">
+                    <Tv className="h-4 w-4" />
+                    Big Screen Mode
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Media displays only on a separate big screen/TV
+                  </p>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
           {!connected ? (
             <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />

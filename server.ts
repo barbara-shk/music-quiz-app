@@ -63,9 +63,9 @@ app.prepare().then(() => {
       }
     });
 
-    socket.on('session:create', (masterName) => {
+    socket.on('session:create', (masterName, useBigScreen) => {
       try {
-        const session = sessionManager.createSession(socket.id);
+        const session = sessionManager.createSession(socket.id, useBigScreen);
         socket.data.sessionId = session.id;
         socket.data.role = 'master';
 
@@ -76,7 +76,7 @@ app.prepare().then(() => {
         const serialized = sessionManager.serializeSession(session);
         socket.emit('session:updated', serialized);
 
-        console.log(`Master ${masterName} created session ${session.id}`);
+        console.log(`Master ${masterName} created session ${session.id} (Big Screen: ${useBigScreen})`);
       } catch (error) {
         console.error('Error creating session:', error);
         socket.emit('error', 'Failed to create session');
@@ -120,6 +120,28 @@ app.prepare().then(() => {
         console.log(`Team ${team.name} joined session ${session.id}`);
       } catch (error) {
         console.error('Error joining session:', error);
+        socket.emit('error', 'Failed to join session');
+      }
+    });
+
+    socket.on('session:join-bigscreen', (sessionId) => {
+      try {
+        const session = sessionManager.getSession(sessionId);
+        if (!session) {
+          socket.emit('error', 'Session not found');
+          return;
+        }
+
+        socket.data.sessionId = sessionId;
+        socket.data.role = 'big-screen';
+        socket.join(sessionId);
+
+        const serialized = sessionManager.serializeSession(session);
+        socket.emit('session:updated', serialized);
+
+        console.log(`Big screen joined session ${sessionId}`);
+      } catch (error) {
+        console.error('Error joining big screen:', error);
         socket.emit('error', 'Failed to join session');
       }
     });
@@ -243,6 +265,29 @@ app.prepare().then(() => {
       }
     });
 
+    socket.on('answer:reveal', (roundId) => {
+      const sessionId = socket.data.sessionId;
+      if (!sessionId || socket.data.role !== 'master') {
+        socket.emit('error', 'Unauthorized');
+        return;
+      }
+
+      const session = sessionManager.getSession(sessionId);
+      if (!session) {
+        socket.emit('error', 'Session not found');
+        return;
+      }
+
+      const round = session.rounds.find((r) => r.id === roundId);
+      if (!round) {
+        socket.emit('error', 'Round not found');
+        return;
+      }
+
+      io.to(sessionId).emit('answer:revealed', roundId, round.correctAnswer);
+      console.log(`Answer revealed for round ${roundId} in session ${sessionId}`);
+    });
+
     socket.on('answer:submit', (roundId, answer) => {
       const sessionId = socket.data.sessionId;
       const teamId = socket.data.teamId;
@@ -322,6 +367,10 @@ app.prepare().then(() => {
         io.to(sessionId).emit('team:updated',
           sessionManager.getSession(sessionId)?.teams.get(teamId)!
         );
+      }
+
+      if (role === 'big-screen' && sessionId) {
+        console.log(`Big screen disconnected from session ${sessionId}`);
       }
     });
   });

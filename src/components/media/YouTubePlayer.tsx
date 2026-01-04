@@ -8,6 +8,7 @@ interface YouTubePlayerProps {
   url: string;
   audioOnly?: boolean;
   autoplay?: boolean;
+  muted?: boolean;
 }
 
 declare global {
@@ -17,7 +18,7 @@ declare global {
   }
 }
 
-export function YouTubePlayer({ url, audioOnly = false, autoplay = true }: YouTubePlayerProps) {
+export function YouTubePlayer({ url, audioOnly = false, autoplay = true, muted = false }: YouTubePlayerProps) {
   const videoId = getYouTubeVideoId(url);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<string>(`youtube-player-${Math.random().toString(36).substr(2, 9)}`);
@@ -51,9 +52,13 @@ export function YouTubePlayer({ url, audioOnly = false, autoplay = true }: YouTu
             showinfo: 0,
             iv_load_policy: 3,
             disablekb: 1,
+            mute: muted ? 1 : 0,
           },
           events: {
             onReady: (event: any) => {
+              if (muted) {
+                event.target.mute();
+              }
               if (autoplay) {
                 event.target.playVideo();
               }
@@ -72,7 +77,7 @@ export function YouTubePlayer({ url, audioOnly = false, autoplay = true }: YouTu
         playerRef.current.destroy();
       }
     };
-  }, [videoId, autoplay]);
+  }, [videoId, autoplay, muted]);
 
   // Stop playback when timer ends
   useEffect(() => {

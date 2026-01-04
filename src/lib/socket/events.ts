@@ -24,9 +24,10 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  'session:create': (masterName: string) => void;
+  'session:create': (masterName: string, useBigScreen: boolean) => void;
   'session:rejoin-master': (sessionId: string) => void;
   'session:join': (code: string, teamData: { name: string; members: string[] }) => void;
+  'session:join-bigscreen': (sessionId: string) => void;
   'session:leave': () => void;
 
   'round:create': (round: Omit<Round, 'id'>) => void;
@@ -36,6 +37,7 @@ export interface ClientToServerEvents {
   'round:end': () => void;
 
   'answer:submit': (roundId: string, answer: string) => void;
+  'answer:reveal': (roundId: string) => void;
 
   'score:award': (teamId: string, roundId: string, points: number) => void;
 
@@ -49,6 +51,6 @@ export interface InterServerEvents {
 
 export interface SocketData {
   sessionId?: string;
-  role?: 'master' | 'team';
+  role?: 'master' | 'team' | 'big-screen';
   teamId?: string;
 }

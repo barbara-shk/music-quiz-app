@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, SkipForward, Trophy } from 'lucide-react';
+import { Play, Square, SkipForward, Trophy, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function GameController() {
@@ -42,6 +42,15 @@ export function GameController() {
   const handleEndGame = () => {
     emit('game:end');
     toast.success('Game ended!');
+  };
+
+  const handleRevealAnswer = () => {
+    if (!currentRound) {
+      toast.error('No active round');
+      return;
+    }
+    emit('answer:reveal', currentRound.id);
+    toast.success('Answer revealed to all players!');
   };
 
   return (
@@ -95,14 +104,37 @@ export function GameController() {
           )}
 
           {phase === 'round-active' && (
+            <>
+              <Button
+                onClick={handleRevealAnswer}
+                variant="secondary"
+                className="w-full"
+                size="lg"
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Show Answer
+              </Button>
+              <Button
+                onClick={handleEndRound}
+                variant="destructive"
+                className="w-full"
+                size="lg"
+              >
+                <Square className="mr-2 h-4 w-4" />
+                End Round
+              </Button>
+            </>
+          )}
+
+          {phase === 'round-ended' && (
             <Button
-              onClick={handleEndRound}
-              variant="destructive"
+              onClick={handleRevealAnswer}
+              variant="secondary"
               className="w-full"
               size="lg"
             >
-              <Square className="mr-2 h-4 w-4" />
-              End Round
+              <Eye className="mr-2 h-4 w-4" />
+              Show Answer
             </Button>
           )}
 
